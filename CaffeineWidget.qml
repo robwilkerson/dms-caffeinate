@@ -221,15 +221,13 @@ PluginComponent {
 
     readonly property color pillColor: caffeineActive ? Theme.primary : Theme.surfaceText
 
-    // Bar-aware pill sizing. The original used fixed Theme.iconSize /
-    // iconSizeSmall, which ignore the bar's thickness and iconScale — so the
-    // widget stayed a constant size while sibling widgets (sized via
-    // barIconSize) scaled with the bar, leaving it visibly small on scaled bars.
-    // Scale the original sizes by the same bar factor barIconSize uses, so the
-    // ring-to-glyph ratio is preserved and a default bar (factor 1) is unchanged.
-    readonly property real barIconScaleFactor: (barThickness / 48) * (barConfig?.iconScale ?? 1.0)
-    readonly property real barPillIconSize: Math.round(Theme.iconSize * barIconScaleFactor)
-    readonly property real barGlyphIconSize: Math.round(Theme.iconSizeSmall * barIconScaleFactor)
+    // Size the pill from barIconSize (offset 0) instead of a fixed Theme.iconSize,
+    // so it tracks the bar's thickness, iconScale, and maximizeWidgetIcons the way
+    // native widgets do. Offset 0 keeps a default bar at Theme.iconSize — the size
+    // #7 established — and the glyph derives from the pill so the ring-to-glyph
+    // ratio holds.
+    readonly property real barPillIconSize: Theme.barIconSize(barThickness, 0, barConfig?.maximizeWidgetIcons, barConfig?.iconScale)
+    readonly property real barGlyphIconSize: Math.round(barPillIconSize * Theme.iconSizeSmall / Theme.iconSize)
 
     horizontalBarPill: Component {
         Item {
