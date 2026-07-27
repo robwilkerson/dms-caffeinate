@@ -6,7 +6,7 @@ import "./dms-common"
 
 PluginSettings {
     id: root
-    pluginId: "caffeine"
+    pluginId: "caffeinate"
 
     SettingsCard {
         id: presetsSection
