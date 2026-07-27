@@ -248,7 +248,7 @@ PluginComponent {
                     color: root.pillColor
                     active: root.caffeineActive
                     backgroundOpacityActive: 0.2
-                    backgroundOpacityInactive: 0.05
+                    backgroundOpacityInactive: 0.4
                     angle: {
                         if (root.selectedDuration === "infinity") return 360;
                         const total = parseInt(root.selectedDuration);
@@ -294,7 +294,7 @@ PluginComponent {
                     color: root.pillColor
                     active: root.caffeineActive
                     backgroundOpacityActive: 0.2
-                    backgroundOpacityInactive: 0.05
+                    backgroundOpacityInactive: 0.4
                     angle: {
                         if (root.selectedDuration === "infinity") return 360;
                         const total = parseInt(root.selectedDuration);
