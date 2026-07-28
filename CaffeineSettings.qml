@@ -175,7 +175,7 @@ PluginSettings {
             items: [
                 I18n.tr("<b>Left-click</b> the pill to open the duration picker popout."),
                 I18n.tr("<b>Right-click</b> the pill to quick toggle stay-awake with default duration."),
-                I18n.tr("The icon will glow when <b>Caffeine</b> is active.")
+                I18n.tr("The icon will glow when <b>Caffeinate</b> is active.")
             ]
         }
     }

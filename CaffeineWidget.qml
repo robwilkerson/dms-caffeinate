@@ -197,7 +197,7 @@ PluginComponent {
 
     // Control Center Integration
     ccWidgetIcon: "local_cafe"
-    ccWidgetPrimaryText: I18n.tr("Caffeine")
+    ccWidgetPrimaryText: I18n.tr("Caffeinate")
     ccWidgetSecondaryText: {
         // Explicitly depend on caffeineActive, selectedDuration, and timeLeft
         const active = root.caffeineActive;
@@ -337,7 +337,7 @@ PluginComponent {
     popoutContent: Component {
         PopoutComponent {
             id: popoutScope
-            headerText: I18n.tr("Caffeine")
+            headerText: I18n.tr("Caffeinate")
             showCloseButton: true
             property int currentIndex: 0
 
