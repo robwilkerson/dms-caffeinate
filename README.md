@@ -1,19 +1,20 @@
-# Caffeine
+# Caffeinate
 
 Keep your screen awake and prevent idle sleep with a single click on your DankBar.
 
 <img src="screenshot.png" width="300" alt="Screenshot">
 
+## About this fork
+
+Caffeinate is a personal fork of [Caffeine](https://github.com/hthienloc/dms-caffeine) by [hthienloc](https://github.com/hthienloc). They did the hard work; I just adjusted the aesthetics to my own taste: sizing the bar pill to the bar's thickness and scale, a smoother countdown ring, and a subtle idle-state ring.
+
+The plugin `id` was renamed from `caffeine` to `caffeinate` so this fork can be installed alongside the original without conflict. Running both side by side lets me compare against upstream and offer contributions back when a change makes sense for everyone.
+
 ## Install
 
-Use the DMS CLI:
+Clone into your DMS plugins directory:
 ```bash
-dms plugins install caffeine
-```
-
-Or manually:
-```bash
-git clone https://github.com/hthienloc/dms-caffeine ~/.config/DankMaterialShell/plugins/caffeine
+git clone https://github.com/robwilkerson/dms-caffeine ~/.config/DankMaterialShell/plugins/caffeinate
 ```
 
 ## Features
