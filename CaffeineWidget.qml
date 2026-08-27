@@ -531,7 +531,7 @@ PluginComponent {
 
     // Sync with system state on startup
     Component.onCompleted: {
-        Proc.runCommand("check-caffeine-active", ["pgrep", "-f", "DMS Caffeine"], function(output, exitCode) {
+        Proc.runCommand("check-caffeine-active", ["pgrep", "-f", "Caffeinate"], function(output, exitCode) {
             const isActive = (exitCode === 0 && output.trim() !== "");
             if (isActive) {
                 globalIsActive.set(true);
@@ -581,13 +581,13 @@ PluginComponent {
             }
             // Keep active, but update the duration!
             // 1. Kill the old process
-            Proc.runCommand("deactivate-caffeine", ["pkill", "-f", "DMS Caffeine"], null, 0);
+            Proc.runCommand("deactivate-caffeine", ["pkill", "-f", "Caffeinate"], null, 0);
 
             // 2. Start the new process with new duration
             const args = [
                 "systemd-inhibit", 
                 "--what=idle", 
-                "--who=DMS Caffeine", 
+                "--who=Caffeinate", 
                 "--why=Manual stay awake override"
             ];
             if (newDuration === "infinity") {
@@ -646,7 +646,7 @@ PluginComponent {
         }
 
         // Kill the inhibitor process
-        Proc.runCommand("deactivate-caffeine", ["pkill", "-f", "DMS Caffeine"], function(output, exitCode) {
+        Proc.runCommand("deactivate-caffeine", ["pkill", "-f", "Caffeinate"], function(output, exitCode) {
             if (showToasts) {
                 if (reason === "battery") {
                     ToastService?.showWarning(
@@ -687,7 +687,7 @@ PluginComponent {
             const args = [
                 "systemd-inhibit", 
                 "--what=idle", 
-                "--who=DMS Caffeine", 
+                "--who=Caffeinate", 
                 "--why=Manual stay awake override"
             ];
             if (targetDuration === "infinity") {
@@ -733,7 +733,7 @@ PluginComponent {
         const args = [
             "systemd-inhibit", 
             "--what=idle", 
-            "--who=DMS Caffeine Auto", 
+            "--who=Caffeinate Auto", 
             "--why=Automated stay awake override"
         ];
         if (targetDuration === "infinity") {
