@@ -1,19 +1,38 @@
 ---
 name: bar-pill-ring-design
-description: Why the bar pill keeps a countdown ring with a visible idle track, and how the pill and glyph are sized against bar config
+description: Why the bar mark is a bare mug with a conditional ring, no label, and a fixed footprint, and how the mug and ring are sized
 metadata:
   type: project
 ---
 
-**The ring stays.** The bar pill draws a `RadialProgressRing` countdown, not a plain `local_cafe` glyph. The ancestor project went back and forth on this (removed the bar ring, then restored it behind a `showProgressRing` toggle defaulting on); here it is unconditional. There is no toggle and no reason to add one for parity. See [[fork-origin]].
+**The bar pill is a fixed-size square in every state.** It never grows to hold text and its
+footprint never changes, so enabling a session does not shift the rest of the bar. Both
+orientations share one `barPill` component; the countdown label was the only thing that ever
+differed between them, and it is gone.
 
-**Idle track is deliberately visible.** `backgroundOpacityInactive` is `0.4` on the bar pill (`CaffeineWidget.qml:251`, `:297`), against the `RadialProgressRing.qml:16` default of `0.05`. The low default renders a near-invisible idle track, which makes the pill look broken when nothing is counting down; `0.4` keeps the ring legible as an affordance at rest. The popout uses `0.08` (`:91`), where the surrounding surface already frames it. Treat `0.4` as intentional, not a stray tweak.
+**Three states, no more.** Idle is a bare mug in `surfaceText`. A timed session adds the
+`RadialProgressRing` and shrinks the mug inside it. A session with no end is the mug at full
+size in `primary` — no ring. A ring pinned at 360 read as a progress bar that never moves,
+which is worse than no ring; the accent colour carries that state instead. This reverses an
+earlier decision that kept the ring unconditional with a visible idle track at
+`backgroundOpacityInactive: 0.4`. That idle track is gone: with no ring at rest there is
+nothing to keep legible.
 
-**Sizing.** `Theme.barIconSize(barThickness, offset, maximizeWidgetIcons, iconScale)` derives icon size from live bar config, so the pill tracks bar thickness and the user's icon scale instead of a hardcoded `Theme.iconSize`:
+**Steam was tried and rejected on the bar.** Lucide's steam ticks live in the top third of the
+viewBox, so showing them changes the mark's content bounds — the mug drops and shrinks to make
+room. A glyph that moves when you toggle it is worse than one that only changes colour. Steam
+stays in the popout (`animatedCoffeeCup`), where there is room and it is already animated.
 
-- `barPillIconSize` uses offset **`0`** — the full pill, because the ring needs the outer diameter (`CaffeineWidget.qml:229`).
-- `barGlyphIconSize` shrinks the glyph inside that pill by the `Theme.iconSizeSmall / Theme.iconSize` ratio (`:230`), leaving room for the ring to orbit it.
+**Sizing.** `Theme.barIconSize(barThickness, offset, maximizeWidgetIcons, iconScale)` derives
+every size from live bar config, so the mark tracks bar thickness and the user's icon scale:
 
-That differs from the canonical DMS single-icon widget pattern in `/usr/share/quickshell/dms/PLUGINS/README.md`, which native widgets (NotepadButton, ColorPicker) follow: perpendicular dimension = `root.widgetThickness`, glyph `size: root.iconSize`, where `PluginComponent` already computes `iconSize` with offset **`-4`**. That pattern assumes no ring. A ring-free variant built to it lives on the inert branch `explore/scaling-without-ring`; consult it only as a reference for native parity, since the ring is not going away.
+- `barPillIconSize` — offset **`0`**, the constant outer footprint the ring needs.
+- `barIdleGlyphSize` — offset **`-4`**, matching what native DMS widgets use, so the idle mug
+  reads as an ordinary bar glyph beside wifi and battery.
+- `barActiveGlyphSize` — shrunk by the `Theme.iconSizeSmall / Theme.iconSize` ratio, leaving
+  the ring room to orbit.
 
-**Residual:** `local_cafe` reads slightly high next to geometric glyphs (wifi, battery) because of the font's optical center. Fixing it needs a manual vertical nudge that breaks native parity, so it is left alone.
+**The mug is [[caffeinate-mark-geometry]], not a font glyph.** It was `local_cafe` from Material
+Symbols, whose ink sits high in its em box (the saucer leaves dead space below), so it rode high
+next to geometric neighbours and needed a vertical fudge. Drawing from path data and fitting to
+the ink removed the fudge entirely.

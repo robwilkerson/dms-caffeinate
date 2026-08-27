@@ -19,7 +19,7 @@ codebase look like stray tweaks but are deliberate; the memory files say which.
 # Workflow
 
 1. Read the relevant QML in full before editing. This plugin keeps most of its logic in one
-   large file (`CaffeineWidget.qml`, ~40K), so grep-and-patch misses context.
+   large file (`CaffeinateWidget.qml`, ~40K), so grep-and-patch misses context.
 2. Check `/usr/share/quickshell/dms/PLUGINS/README.md` for the canonical pattern before
    using a `PluginComponent` property or `Theme` helper. Do not guess at the API.
 3. Follow existing conventions in the file over general QML idiom.

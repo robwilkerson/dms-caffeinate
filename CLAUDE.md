@@ -13,8 +13,9 @@ QML for Quickshell/DMS (Qt 6). No build system, no package manager, no dependenc
 manifest — DMS loads the QML directly. `scripts/i18n.py` is standalone Python 3
 (stdlib only) for translation tooling.
 
-- `CaffeineWidget.qml` — the widget: bar pill, popout, automation, all state
-- `CaffeineSettings.qml` — the settings pane, loaded via `plugin.json`'s `settings` key
+- `CaffeinateWidget.qml` — the widget: bar pill, popout, automation, all state
+- `CaffeinateSettings.qml` — the settings pane, loaded via `plugin.json`'s `settings` key
+- `CaffeinateMark.qml` — the mug glyph, drawn from Lucide's `coffee` path data
 - `RadialProgressRing.qml` — the countdown ring
 - `dms-common/` — shared DMS UI components (`SettingsCard`, `ToggleSettingPlus`, …)
   carried by several DMS plugins, not authored for this one. Don't refactor it to suit
@@ -42,16 +43,18 @@ never load. See `.claude/memory/local-development-setup.md`.
 
 ## Conventions
 
-- Plugin `id` is `caffeinate`, and the `pluginId` in both `CaffeineWidget.qml` and
-  `CaffeineSettings.qml` must match it. A mismatch disconnects the settings pane from the
+- Plugin `id` is `caffeinate`, and the `pluginId` in both `CaffeinateWidget.qml` and
+  `CaffeinateSettings.qml` must match it. A mismatch disconnects the settings pane from the
   widget with no error anywhere. See `.claude/memory/plugin-identity.md`.
-- File and type names stay `Caffeine*`. Only the id and display name were rebranded; every
-  other `caffeine` identifier is now `caffeinate`.
+- Nothing is named `Caffeine*` any more — files, types, and identifiers are all
+  `Caffeinate*`. Renaming a QML file means updating `plugin.json`'s `component`/`settings`
+  paths in the same commit.
 - User-facing strings go through `I18n.tr()`. After adding one, run
-  `python3 scripts/i18n.py extract`, then `translate`. The brand name stays unlocalized.
+  `python3 scripts/i18n.py extract`. Skip `translate` — it machine-translates via Google
+  and the shipped poexports are deliberately left stale. The brand name stays unlocalized.
   (The script's docstring says "dms-stopwatch" — it was copied from another plugin.)
-- The bar-pill ring is unconditional and its idle opacity is `0.4` on purpose. Neither is
-  a stray tweak. See `.claude/memory/bar-pill-ring-design.md`.
+- The bar mark is deliberately austere: no label, fixed footprint, ring only while a timed
+  session counts down. See `.claude/memory/bar-pill-ring-design.md`.
 
 Work is tracked in GitHub Issues on `robwilkerson/dms-caffeinate`.
 

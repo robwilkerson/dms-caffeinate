@@ -9,8 +9,8 @@
   "capabilities": [
     "control-center"
   ],
-  "component": "./CaffeineWidget.qml",
-  "settings": "./CaffeineSettings.qml",
+  "component": "./CaffeinateWidget.qml",
+  "settings": "./CaffeinateSettings.qml",
   "permissions": [
     "settings_read",
     "settings_write"
