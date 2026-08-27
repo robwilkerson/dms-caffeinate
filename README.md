@@ -8,20 +8,20 @@ Keep your screen awake and prevent idle sleep with a single click on your DankBa
 
 Caffeinate is a personal fork of [Caffeine](https://github.com/hthienloc/dms-caffeine) by [hthienloc](https://github.com/hthienloc). They did the hard work; I just adjusted the aesthetics to my own taste: sizing the bar pill to the bar's thickness and scale, a smoother countdown ring, and a subtle idle-state ring.
 
-The plugin `id` was renamed from `caffeine` to `caffeinate` so this fork can be installed alongside the original without conflict. Running both side by side lets me compare against upstream and offer contributions back when a change makes sense for everyone.
+The plugin `id` was renamed from `caffeine` to `caffeinate` so this fork can be installed alongside the original without either shadowing the other. The two have since diverged and develop independently.
 
 ## Install
 
 Clone into your DMS plugins directory:
 ```bash
-git clone https://github.com/robwilkerson/dms-caffeine ~/.config/DankMaterialShell/plugins/caffeinate
+git clone https://github.com/robwilkerson/dms-caffeinate ~/.config/DankMaterialShell/plugins/caffeinate
 ```
 
 ## Features
 
 - **DankBar Widget**: Click the coffee icon pill to manage screen stay-awake / sleep inhibition.
 - **Control Center Integration**: View active status/remaining time and quickly select presets or custom durations from the Control Center.
-- **Timed Caffeine**: Choose from predefined presets or enter a custom duration (in minutes).
+- **Timed Sessions**: Choose from predefined presets or enter a custom duration (in minutes).
 - **App Automation**: Auto-activate when specific media players or meeting tools are open.
 - **Full Screen Awareness**: Automatically stay awake when any window is full-screen.
 - **Battery Integration**: Automatically disable stay-awake when battery level drops below a configurable threshold to save power.
@@ -36,7 +36,7 @@ git clone https://github.com/robwilkerson/dms-caffeine ~/.config/DankMaterialShe
 
 ## TODO / Roadmap
 
-- [x] **Timed Caffeine:** Predefined timers or custom duration options.
+- [x] **Timed Sessions:** Predefined timers or custom duration options.
 - [x] **Status Indicator:** Show remaining time in the bar for timed sessions.
 - [x] **App Automation:** Auto-activate for specific apps (Media players, Meeting tools).
 - [x] **Full Screen Awareness:** Stay awake automatically when any window is full-screen.
