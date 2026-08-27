@@ -98,23 +98,23 @@ PluginComponent {
             }
 
             // Coffee Cup Icon
-            DankIcon {
+            CaffeinateMark {
                 id: cupIcon
-                name: "local_cafe"
                 size: 28
-                color: root.caffeinateActive ? Theme.primary : Theme.surfaceText
+                markColor: root.caffeinateActive ? Theme.primary : Theme.surfaceText
+                strokeWeight: 2.0
                 anchors.centerIn: parent
-                anchors.verticalCenterOffset: 2
             }
 
-            // Steaming lines (active only)
+            // Steaming lines (active only). Anchored to the mug's ink rather than to the
+            // mark's padded box, or the wisps would float clear of the cup.
             Item {
                 id: steamContainer
                 width: 24
                 height: 16
                 anchors.bottom: cupIcon.top
                 anchors.horizontalCenter: cupIcon.horizontalCenter
-                anchors.bottomMargin: -2
+                anchors.bottomMargin: -(cupIcon.inkTop + 2)
                 visible: root.caffeinateActive
 
                 Repeater {
@@ -166,7 +166,10 @@ PluginComponent {
         const result = [];
         for (const item of items) {
             if (item.toLowerCase() === "infinity" || item.toLowerCase() === "infinite" || item.toLowerCase() === "inf") {
-                result.push({ label: "Infinite", value: "infinity" });
+                // "infinity" is the value, not a display string: it is passed straight to
+                // `sleep` when the inhibitor starts and is persisted as selectedDuration.
+                // Only the label is free to change.
+                result.push({ label: I18n.tr("Forever"), value: "infinity" });
             } else {
                 const mins = parseInt(item);
                 if (!isNaN(mins) && mins > 0) {
@@ -191,7 +194,7 @@ PluginComponent {
             { label: "30 Min", value: "1800" },
             { label: "1 Hour", value: "3600" },
             { label: "2 Hours", value: "7200" },
-            { label: "Infinite", value: "infinity" }
+            { label: I18n.tr("Forever"), value: "infinity" }
         ];
     }
 
@@ -205,7 +208,7 @@ PluginComponent {
         const remaining = root.timeLeft;
 
         if (!active) return I18n.tr("Inactive")
-        if (dur === "infinity" || dur === "undefined" || !dur) return I18n.tr("Indefinite")
+        if (dur === "infinity" || dur === "undefined" || !dur) return I18n.tr("Forever")
         if (remaining <= 0) return I18n.tr("Active")
         const mins = Math.ceil(remaining / 60)
         return mins + I18n.tr("m")
@@ -221,105 +224,61 @@ PluginComponent {
 
     readonly property color pillColor: caffeinateActive ? Theme.primary : Theme.surfaceText
 
-    // Size the pill from barIconSize (offset 0) instead of a fixed Theme.iconSize,
-    // so it tracks the bar's thickness, iconScale, and maximizeWidgetIcons the way
-    // native widgets do. Offset 0 keeps a default bar at Theme.iconSize — the size
-    // #7 established — and the glyph derives from the pill so the ring-to-glyph
-    // ratio holds.
+    // All three sizes derive from barIconSize so the pill tracks bar thickness, iconScale,
+    // and maximizeWidgetIcons the way native widgets do, rather than a fixed Theme.iconSize.
+    //
+    // The footprint stays constant across states; only what fills it changes. Idle draws a
+    // bare glyph at the same -4 offset every other bar icon uses, so it sits among its
+    // neighbours as an ordinary glyph. Active swaps in the ring at the full offset-0
+    // diameter and shrinks the glyph to leave it room to orbit.
     readonly property real barPillIconSize: Theme.barIconSize(barThickness, 0, barConfig?.maximizeWidgetIcons, barConfig?.iconScale)
-    readonly property real barGlyphIconSize: Math.round(barPillIconSize * Theme.iconSizeSmall / Theme.iconSize)
+    readonly property real barIdleGlyphSize: Theme.barIconSize(barThickness, -4, barConfig?.maximizeWidgetIcons, barConfig?.iconScale)
+    readonly property real barActiveGlyphSize: Math.round(barPillIconSize * Theme.iconSizeSmall / Theme.iconSize)
 
-    horizontalBarPill: Component {
-        Item {
-            implicitWidth: caffeinateActive ? contentRow.implicitWidth : root.barPillIconSize
-            implicitHeight: root.barPillIconSize
+    // The ring means "counting down", so it appears only for a timed session: drawn at a
+    // fixed 360 it would read as a progress bar that never moves. A session with no end
+    // is carried by the accent colour alone.
+    readonly property bool showCountdownRing: caffeinateActive && selectedDuration !== "infinity"
 
-            Row {
-                id: contentRow
-                anchors.centerIn: parent
-                spacing: caffeinateActive ? Theme.spacingS : 0
-
-                RadialProgressRing {
-                    width: root.barPillIconSize
-                    height: root.barPillIconSize
-                    anchors.verticalCenter: parent.verticalCenter
-                    radius: root.barPillIconSize / 2 - strokeWidth - 1
-                    strokeWidth: 1.5
-                    color: root.pillColor
-                    active: root.caffeinateActive
-                    backgroundOpacityActive: 0.2
-                    backgroundOpacityInactive: 0.4
-                    angle: {
-                        if (root.selectedDuration === "infinity") return 360;
-                        const total = parseInt(root.selectedDuration);
-                        if (isNaN(total) || total <= 0) return 360;
-                        return 360 * (root.timeLeft / total);
-                    }
-
-                    DankIcon {
-                        name: "local_cafe"
-                        size: root.barGlyphIconSize
-                        color: root.pillColor
-                        anchors.centerIn: parent
-                    }
-                }
-
-                StyledText {
-                    text: root.ccWidgetSecondaryText
-                    color: root.pillColor
-                    font.pixelSize: Theme.fontSizeMedium
-                    anchors.verticalCenter: parent.verticalCenter
-                    visible: caffeinateActive
-                }
-            }
-        }
+    function ringAngle() {
+        if (selectedDuration === "infinity") return 360;
+        const total = parseInt(selectedDuration);
+        if (isNaN(total) || total <= 0) return 360;
+        return 360 * (timeLeft / total);
     }
 
-    verticalBarPill: Component {
+    // Both orientations are the same square glyph. The remaining time lives in the ring
+    // and in the popout, so the pill never grows to hold a label and the bar layout stays
+    // put whether or not a session is running.
+    readonly property Component barPill: Component {
         Item {
             implicitWidth: root.barPillIconSize
-            implicitHeight: caffeinateActive ? vColumn.implicitHeight : root.barPillIconSize
+            implicitHeight: root.barPillIconSize
 
-            Column {
-                id: vColumn
+            // Sibling of the glyph, not its parent: hiding the ring must not take the
+            // mug with it.
+            RadialProgressRing {
+                anchors.fill: parent
+                visible: root.showCountdownRing
+                radius: root.barPillIconSize / 2 - strokeWidth - 1
+                strokeWidth: 1.5
+                color: root.pillColor
+                active: root.caffeinateActive
+                backgroundOpacityActive: 0.2
+                angle: root.ringAngle()
+            }
+
+            CaffeinateMark {
+                size: root.showCountdownRing ? root.barActiveGlyphSize : root.barIdleGlyphSize
+                markColor: root.pillColor
+                strokeWeight: 2.0
                 anchors.centerIn: parent
-                spacing: caffeinateActive ? Theme.spacingXS : 0
-
-                RadialProgressRing {
-                    width: root.barPillIconSize
-                    height: root.barPillIconSize
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    radius: root.barPillIconSize / 2 - strokeWidth - 1
-                    strokeWidth: 1.5
-                    color: root.pillColor
-                    active: root.caffeinateActive
-                    backgroundOpacityActive: 0.2
-                    backgroundOpacityInactive: 0.4
-                    angle: {
-                        if (root.selectedDuration === "infinity") return 360;
-                        const total = parseInt(root.selectedDuration);
-                        if (isNaN(total) || total <= 0) return 360;
-                        return 360 * (root.timeLeft / total);
-                    }
-
-                    DankIcon {
-                        name: "local_cafe"
-                        size: root.barGlyphIconSize
-                        color: root.pillColor
-                        anchors.centerIn: parent
-                    }
-                }
-
-                StyledText {
-                    text: root.ccWidgetSecondaryText
-                    color: root.pillColor
-                    font.pixelSize: Theme.fontSizeSmall
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    visible: caffeinateActive
-                }
             }
         }
     }
+
+    horizontalBarPill: barPill
+    verticalBarPill: barPill
 
     // Click action: always open duration picker popout (via null fallback)
     pillClickAction: null
@@ -339,10 +298,15 @@ PluginComponent {
             id: popoutScope
             headerText: I18n.tr("Caffeinate")
             showCloseButton: true
-            property int currentIndex: 0
+            // Start the cursor on the selected preset rather than on whatever happens to be
+            // first, and keep it unpainted until the keyboard is actually used — parked at a
+            // fixed index it reads as a second kind of selection and muddies the border.
+            property int currentIndex: Math.max(0, root.durationOptions.findIndex(o => String(o.value) === String(root.selectedDuration)))
+            property bool keyboardActive: false
 
             // Keyboard navigation
             Keys.onPressed: function(event) {
+                popoutScope.keyboardActive = true
                 const cols = 3
                 const count = root.durationOptions.length
                 let idx = popoutScope.currentIndex
@@ -360,7 +324,7 @@ PluginComponent {
                     event.accepted = true
                 } else if (event.key === Qt.Key_Return || event.key === Qt.Key_Space) {
                     if (idx >= 0 && idx < count) {
-                        root.changeDuration(root.durationOptions[idx].value)
+                        root.selectDuration(root.durationOptions[idx].value)
                     }
                     event.accepted = true
                 } else if (event.key === Qt.Key_Escape) {
@@ -393,19 +357,14 @@ PluginComponent {
                         spacing: 2
 
                         StyledText {
-                            text: I18n.tr("Keep Awake")
+                            text: root.statusHeadline()
                             font.pixelSize: Theme.fontSizeLarge
                             color: Theme.surfaceText
                             font.weight: Font.Medium
                         }
 
                         StyledText {
-                            text: {
-                                if (!root.caffeinateActive) return I18n.tr("Inactive");
-                                if (root.selectedDuration === "infinity") return I18n.tr("Active (Indefinite)");
-                                const mins = Math.ceil(root.timeLeft / 60);
-                                return I18n.tr("Active: %1m remaining").arg(mins);
-                            }
+                            text: root.statusSubline()
                             font.pixelSize: Theme.fontSizeSmall
                             color: root.caffeinateActive ? Theme.primary : Theme.surfaceVariantText
                         }
@@ -429,9 +388,9 @@ PluginComponent {
                             height: 48
                             radius: Theme.cornerRadius
                             color: {
-                                if (popoutScope.currentIndex === index) return Theme.primaryPressed
+                                if (popoutScope.keyboardActive && popoutScope.currentIndex === index) return Theme.primaryPressed
                                 if (optionMouseArea.containsMouse) return Theme.surfaceContainerHighest
-                                return (root.selectedDuration === modelData.value ? Theme.withAlpha(Theme.primary, 0.12) : "transparent")
+                                return "transparent"
                             }
                             border.color: root.selectedDuration === modelData.value ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
                             border.width: root.selectedDuration === modelData.value ? 2 : 1
@@ -443,13 +402,8 @@ PluginComponent {
                                 cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     if (typeof popoutScope !== 'undefined') popoutScope.currentIndex = index
-                                    const isSelected = String(root.selectedDuration) === String(modelData.value)
-                                    if (isSelected) {
-                                        root.toggleCaffeinate(modelData.value)
-                                        if (typeof popoutScope !== 'undefined') closePopout()
-                                    } else {
-                                        root.changeDuration(modelData.value)
-                                    }
+                                    root.selectDuration(modelData.value)
+                                    if (typeof popoutScope !== 'undefined') closePopout()
                                 }
                             }
 
@@ -463,12 +417,12 @@ PluginComponent {
 
                             Keys.onReturnPressed: function(event) {
                                 popoutScope.currentIndex = index
-                                root.changeDuration(modelData.value)
+                                root.selectDuration(modelData.value)
                                 event.accepted = true
                             }
                             Keys.onSpacePressed: function(event) {
                                 popoutScope.currentIndex = index
-                                root.changeDuration(modelData.value)
+                                root.selectDuration(modelData.value)
                                 event.accepted = true
                             }
                         }
@@ -497,14 +451,28 @@ PluginComponent {
                             const mins = parseInt(customTimeInput.text.trim());
                             if (!isNaN(mins) && mins > 0) {
                                 const value = (mins * 60).toString();
-                                root.changeDuration(value);
-                                if (!root.caffeinateActive) {
-                                    root.toggleCaffeinate(value);
-                                }
+                                root.selectDuration(value);
                                 customTimeInput.text = "";
                                 closePopout();
                             }
                         }
+                    }
+                }
+
+                // The picker can only start or re-time a session, never stop one, so
+                // stopping needs somewhere obvious to live. Hidden while idle: there is
+                // nothing to stop, and a dead control reads as a broken one.
+                DankButton {
+                    width: parent.width - parent.leftPadding - parent.rightPadding
+                    text: I18n.tr("Decaffeinate")
+                    iconName: "bedtime"
+                    buttonHeight: 36
+                    backgroundColor: Theme.surfaceContainerHighest
+                    textColor: Theme.surfaceText
+                    visible: root.caffeinateActive
+                    onClicked: {
+                        root.toggleCaffeinate();
+                        closePopout();
                     }
                 }
             }
@@ -555,6 +523,22 @@ PluginComponent {
         })
     }
 
+    // The two status lines read as one sentence: the headline says what is happening and
+    // the subline completes it. Shared so the bar popout and the Control Center detail
+    // cannot drift apart.
+    function statusHeadline() {
+        return caffeinateActive ? I18n.tr("Caffeinating...") : I18n.tr("Decaffeinated");
+    }
+
+    function statusSubline() {
+        if (!caffeinateActive) return I18n.tr("Select a duration to caffeinate");
+        if (selectedDuration === "infinity") return I18n.tr("Indefinitely");
+        const mins = Math.ceil(timeLeft / 60);
+        if (mins <= 0) return I18n.tr("for less than a minute");
+        if (mins === 1) return I18n.tr("for one more minute");
+        return I18n.tr("for another %1 minutes").arg(mins);
+    }
+
     function formatDurationLabel(dur) {
         if (dur === "infinity") return I18n.tr("indefinitely");
         const secs = parseInt(dur);
@@ -566,6 +550,16 @@ PluginComponent {
         const hrs = mins / 60;
         if (hrs === 1) return I18n.tr("1 hour");
         return hrs.toFixed(1).replace(".0", "") + " " + I18n.tr("hours");
+    }
+
+    // What a preset click means: start a session when idle, re-time a running one when a
+    // different preset is picked, and do nothing when the running preset is picked again.
+    // Stopping is deliberately not here — that is the Decaffeinate button or a right-click
+    // on the pill, so a stray click in the picker can never kill a session.
+    function selectDuration(value) {
+        if (caffeinateActive && String(selectedDuration) === String(value)) return;
+        changeDuration(value);
+        if (!caffeinateActive) toggleCaffeinate(value);
     }
 
     function changeDuration(newDuration) {
@@ -927,19 +921,14 @@ PluginComponent {
                         spacing: 2
 
                         StyledText {
-                            text: I18n.tr("Keep Awake Duration")
+                            text: root.statusHeadline()
                             font.pixelSize: Theme.fontSizeLarge
                             color: Theme.surfaceText
                             font.weight: Font.Medium
                         }
 
                         StyledText {
-                            text: {
-                                if (!root.caffeinateActive) return I18n.tr("Inactive");
-                                if (root.selectedDuration === "infinity") return I18n.tr("Active (Indefinite)");
-                                const mins = Math.ceil(root.timeLeft / 60);
-                                return I18n.tr("Active: %1m remaining").arg(mins);
-                            }
+                            text: root.statusSubline()
                             font.pixelSize: Theme.fontSizeSmall
                             color: root.caffeinateActive ? Theme.primary : Theme.surfaceVariantText
                         }
@@ -961,9 +950,9 @@ PluginComponent {
                             width: (parent.width - Theme.spacingS * 2) / 3
                             height: 48
                             radius: Theme.cornerRadius
-                            color: optionMouseArea.containsMouse 
-                                ? Theme.surfaceContainerHighest 
-                                : (root.selectedDuration === modelData.value ? Theme.withAlpha(Theme.primary, 0.12) : "transparent")
+                            color: optionMouseArea.containsMouse
+                                ? Theme.surfaceContainerHighest
+                                : "transparent"
                             border.color: root.selectedDuration === modelData.value ? Theme.primary : Qt.rgba(Theme.outline.r, Theme.outline.g, Theme.outline.b, 0.2)
                             border.width: root.selectedDuration === modelData.value ? 2 : 1
 
@@ -972,14 +961,7 @@ PluginComponent {
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    const isSelected = String(root.selectedDuration) === String(modelData.value)
-                                    if (isSelected) {
-                                        root.toggleCaffeinate(modelData.value)
-                                    } else {
-                                        root.changeDuration(modelData.value)
-                                    }
-                                }
+                                onClicked: root.selectDuration(modelData.value)
                             }
 
                             StyledText {
@@ -1016,10 +998,7 @@ PluginComponent {
                             const mins = parseInt(customTimeInputCC.text.trim());
                             if (!isNaN(mins) && mins > 0) {
                                 const value = (mins * 60).toString();
-                                root.changeDuration(value);
-                                if (!root.caffeinateActive) {
-                                    root.toggleCaffeinate(value);
-                                }
+                                root.selectDuration(value);
                                 customTimeInputCC.text = "";
                             }
                         }
