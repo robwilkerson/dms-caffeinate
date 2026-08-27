@@ -9,9 +9,11 @@ no contributions flow back. See `.claude/memory/fork-origin.md`.
 
 ## Stack
 
-QML for Quickshell/DMS (Qt 6). No build system, no package manager, no dependency
+QML for Quickshell/DMS (Qt 6). No build step, no package manager, no dependency
 manifest — DMS loads the QML directly. `scripts/i18n.py` is standalone Python 3
-(stdlib only) for translation tooling.
+(stdlib only) for translation tooling. The `justfile` is a command runner over the
+`dms` and i18n commands, not a build system; `just` is optional, every recipe is a
+command you could type by hand.
 
 - `CaffeinateWidget.qml` — the widget: bar pill, popout, automation, all state
 - `CaffeinateSettings.qml` — the settings pane, loaded via `plugin.json`'s `settings` key
@@ -30,8 +32,13 @@ There are no tests and no CI, and QML errors surface only at load time. Never cl
 visual or behavioral change works — you cannot see the bar. Finish every change by
 telling the user which command to run and what to look for, then wait:
 
-- QML-only edits: `dms ipc call plugins reload caffeinate`
-- Any `plugin.json` change (id, name, version): `dms restart`
+- QML-only edits: `just reload` (`dms ipc call plugins reload caffeinate`)
+- Any `plugin.json` change (id, name, version): `just restart` (`dms restart`)
+
+`just doctor` checks the invariants that fail silently — manifest paths that point at
+missing files, a `pluginId` that no longer matches the manifest, an inhibitor `--who`
+its own `pkill` pattern won't match. It is not a substitute for loading the plugin, but
+it catches a whole class of bug the bar reports as nothing at all.
 
 Both require the id argument, and neither re-reads `plugin.json`, so `dms restart` is the
 safe default. These run in the user's Wayland session, not an agent shell.

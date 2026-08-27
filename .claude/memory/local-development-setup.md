@@ -35,5 +35,7 @@ returns only its own matches, which reads as a false "nothing is running". Inhib
 process state must be checked by the user with `systemd-inhibit --list`, never inferred from
 an agent-side `pgrep`.
 
-A `just develop` recipe to automate the symlink swap has been discussed but not built; the
-repo deliberately has no build system, and all the `dms-*` siblings would want the same thing.
+`just develop start` performs this swap and `just develop stop` reverses it, restoring whatever
+install copy was displaced. `just status` reports which of the two is live. The justfile is
+plugin-agnostic apart from its `PLUGIN_ID` variable, so the `dms-*` siblings can take it
+wholesale — see the sibling triggers in `CLAUDE.md`.
