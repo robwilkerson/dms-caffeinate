@@ -9,11 +9,11 @@ import qs.Modules.Plugins
 
 PluginComponent {
     id: root
-    pluginId: "caffeine"
+    pluginId: "caffeinate"
     pluginService: PluginService
 
     // Reactive states
-    readonly property bool caffeineActive: globalIsActive.value
+    readonly property bool caffeinateActive: globalIsActive.value
     property string selectedDuration: {
         if (pluginData && pluginData.selectedDuration !== undefined && pluginData.selectedDuration !== null && pluginData.selectedDuration !== "undefined" && pluginData.selectedDuration !== "") {
             return pluginData.selectedDuration;
@@ -86,7 +86,7 @@ PluginComponent {
                 radius: 25
                 strokeWidth: 3
                 color: Theme.primary
-                active: root.caffeineActive
+                active: root.caffeinateActive
                 backgroundOpacityActive: 0.25
                 backgroundOpacityInactive: 0.08
                 angle: {
@@ -102,7 +102,7 @@ PluginComponent {
                 id: cupIcon
                 name: "local_cafe"
                 size: 28
-                color: root.caffeineActive ? Theme.primary : Theme.surfaceText
+                color: root.caffeinateActive ? Theme.primary : Theme.surfaceText
                 anchors.centerIn: parent
                 anchors.verticalCenterOffset: 2
             }
@@ -115,7 +115,7 @@ PluginComponent {
                 anchors.bottom: cupIcon.top
                 anchors.horizontalCenter: cupIcon.horizontalCenter
                 anchors.bottomMargin: -2
-                visible: root.caffeineActive
+                visible: root.caffeinateActive
 
                 Repeater {
                     model: 3
@@ -199,8 +199,8 @@ PluginComponent {
     ccWidgetIcon: "local_cafe"
     ccWidgetPrimaryText: I18n.tr("Caffeinate")
     ccWidgetSecondaryText: {
-        // Explicitly depend on caffeineActive, selectedDuration, and timeLeft
-        const active = root.caffeineActive;
+        // Explicitly depend on caffeinateActive, selectedDuration, and timeLeft
+        const active = root.caffeinateActive;
         const dur = root.selectedDuration;
         const remaining = root.timeLeft;
 
@@ -210,7 +210,7 @@ PluginComponent {
         const mins = Math.ceil(remaining / 60)
         return mins + I18n.tr("m")
     }
-    ccWidgetIsActive: caffeineActive
+    ccWidgetIsActive: caffeinateActive
     ccDetailHeight: {
         const rows = Math.ceil(durationOptions.length / 3);
         const headerHeight = 64 + Theme.spacingS;
@@ -219,7 +219,7 @@ PluginComponent {
         return headerHeight + gridHeight + customInputHeight + Theme.spacingM * 2;
     }
 
-    readonly property color pillColor: caffeineActive ? Theme.primary : Theme.surfaceText
+    readonly property color pillColor: caffeinateActive ? Theme.primary : Theme.surfaceText
 
     // Size the pill from barIconSize (offset 0) instead of a fixed Theme.iconSize,
     // so it tracks the bar's thickness, iconScale, and maximizeWidgetIcons the way
@@ -231,13 +231,13 @@ PluginComponent {
 
     horizontalBarPill: Component {
         Item {
-            implicitWidth: caffeineActive ? contentRow.implicitWidth : root.barPillIconSize
+            implicitWidth: caffeinateActive ? contentRow.implicitWidth : root.barPillIconSize
             implicitHeight: root.barPillIconSize
 
             Row {
                 id: contentRow
                 anchors.centerIn: parent
-                spacing: caffeineActive ? Theme.spacingS : 0
+                spacing: caffeinateActive ? Theme.spacingS : 0
 
                 RadialProgressRing {
                     width: root.barPillIconSize
@@ -246,7 +246,7 @@ PluginComponent {
                     radius: root.barPillIconSize / 2 - strokeWidth - 1
                     strokeWidth: 1.5
                     color: root.pillColor
-                    active: root.caffeineActive
+                    active: root.caffeinateActive
                     backgroundOpacityActive: 0.2
                     backgroundOpacityInactive: 0.4
                     angle: {
@@ -269,7 +269,7 @@ PluginComponent {
                     color: root.pillColor
                     font.pixelSize: Theme.fontSizeMedium
                     anchors.verticalCenter: parent.verticalCenter
-                    visible: caffeineActive
+                    visible: caffeinateActive
                 }
             }
         }
@@ -278,12 +278,12 @@ PluginComponent {
     verticalBarPill: Component {
         Item {
             implicitWidth: root.barPillIconSize
-            implicitHeight: caffeineActive ? vColumn.implicitHeight : root.barPillIconSize
+            implicitHeight: caffeinateActive ? vColumn.implicitHeight : root.barPillIconSize
 
             Column {
                 id: vColumn
                 anchors.centerIn: parent
-                spacing: caffeineActive ? Theme.spacingXS : 0
+                spacing: caffeinateActive ? Theme.spacingXS : 0
 
                 RadialProgressRing {
                     width: root.barPillIconSize
@@ -292,7 +292,7 @@ PluginComponent {
                     radius: root.barPillIconSize / 2 - strokeWidth - 1
                     strokeWidth: 1.5
                     color: root.pillColor
-                    active: root.caffeineActive
+                    active: root.caffeinateActive
                     backgroundOpacityActive: 0.2
                     backgroundOpacityInactive: 0.4
                     angle: {
@@ -315,7 +315,7 @@ PluginComponent {
                     color: root.pillColor
                     font.pixelSize: Theme.fontSizeSmall
                     anchors.horizontalCenter: parent.horizontalCenter
-                    visible: caffeineActive
+                    visible: caffeinateActive
                 }
             }
         }
@@ -326,7 +326,7 @@ PluginComponent {
 
     // Right click: quick toggle stay-awake with default duration
     pillRightClickAction: function() {
-        toggleCaffeine()
+        toggleCaffeinate()
     }
 
     // Popout dimensions
@@ -401,13 +401,13 @@ PluginComponent {
 
                         StyledText {
                             text: {
-                                if (!root.caffeineActive) return I18n.tr("Inactive");
+                                if (!root.caffeinateActive) return I18n.tr("Inactive");
                                 if (root.selectedDuration === "infinity") return I18n.tr("Active (Indefinite)");
                                 const mins = Math.ceil(root.timeLeft / 60);
                                 return I18n.tr("Active: %1m remaining").arg(mins);
                             }
                             font.pixelSize: Theme.fontSizeSmall
-                            color: root.caffeineActive ? Theme.primary : Theme.surfaceVariantText
+                            color: root.caffeinateActive ? Theme.primary : Theme.surfaceVariantText
                         }
                     }
                 }
@@ -445,7 +445,7 @@ PluginComponent {
                                     if (typeof popoutScope !== 'undefined') popoutScope.currentIndex = index
                                     const isSelected = String(root.selectedDuration) === String(modelData.value)
                                     if (isSelected) {
-                                        root.toggleCaffeine(modelData.value)
+                                        root.toggleCaffeinate(modelData.value)
                                         if (typeof popoutScope !== 'undefined') closePopout()
                                     } else {
                                         root.changeDuration(modelData.value)
@@ -498,8 +498,8 @@ PluginComponent {
                             if (!isNaN(mins) && mins > 0) {
                                 const value = (mins * 60).toString();
                                 root.changeDuration(value);
-                                if (!root.caffeineActive) {
-                                    root.toggleCaffeine(value);
+                                if (!root.caffeinateActive) {
+                                    root.toggleCaffeinate(value);
                                 }
                                 customTimeInput.text = "";
                                 closePopout();
@@ -512,7 +512,7 @@ PluginComponent {
     }
 
     onCcWidgetToggled: {
-        toggleCaffeine()
+        toggleCaffeinate()
     }
 
     Timer {
@@ -524,14 +524,14 @@ PluginComponent {
             globalTimeLeft.set(globalTimeLeft.value - 1);
             if (globalTimeLeft.value <= 0) {
                 countdownTimer.stop();
-                deactivateCaffeine("timeout"); // Turn off caffeine
+                deactivateCaffeinate("timeout"); // Turn off caffeinate
             }
         }
     }
 
     // Sync with system state on startup
     Component.onCompleted: {
-        Proc.runCommand("check-caffeine-active", ["pgrep", "-f", "Caffeinate"], function(output, exitCode) {
+        Proc.runCommand("check-caffeinate-active", ["pgrep", "-f", "Caffeinate"], function(output, exitCode) {
             const isActive = (exitCode === 0 && output.trim() !== "");
             if (isActive) {
                 globalIsActive.set(true);
@@ -549,7 +549,7 @@ PluginComponent {
                     pluginService.savePluginState(pluginId, "expiration", 0);
                 }
             }
-            // Trigger auto-checks after we sync caffeine state!
+            // Trigger auto-checks after we sync caffeinate state!
             checkAutoActivation();
             checkBatteryStatus();
         })
@@ -575,13 +575,13 @@ PluginComponent {
             pluginService.savePluginData(pluginId, "selectedDuration", newDuration);
         }
 
-        if (caffeineActive) {
+        if (caffeinateActive) {
             if (globalIsAutoActive.value) {
                 globalIsAutoActive.set(false);
             }
             // Keep active, but update the duration!
             // 1. Kill the old process
-            Proc.runCommand("deactivate-caffeine", ["pkill", "-f", "Caffeinate"], null, 0);
+            Proc.runCommand("deactivate-caffeinate", ["pkill", "-f", "Caffeinate"], null, 0);
 
             // 2. Start the new process with new duration
             const args = [
@@ -623,7 +623,7 @@ PluginComponent {
         }
     }
 
-    function deactivateCaffeine(reason) {
+    function deactivateCaffeinate(reason) {
         if (!globalIsActive.value) return;
 
         // Reset activation flags
@@ -646,7 +646,7 @@ PluginComponent {
         }
 
         // Kill the inhibitor process
-        Proc.runCommand("deactivate-caffeine", ["pkill", "-f", "Caffeinate"], function(output, exitCode) {
+        Proc.runCommand("deactivate-caffeinate", ["pkill", "-f", "Caffeinate"], function(output, exitCode) {
             if (showToasts) {
                 if (reason === "battery") {
                     ToastService?.showWarning(
@@ -665,7 +665,7 @@ PluginComponent {
         }
     }
 
-    function toggleCaffeine(duration) {
+    function toggleCaffeinate(duration) {
         if (batteryIntegrationEnabled && typeof BatteryService !== "undefined" && BatteryService.batteryAvailable && !BatteryService.isCharging && BatteryService.batteryLevel <= batteryLowThreshold) {
             if (!globalIsActive.value) {
                 ToastService?.showWarning(
@@ -681,7 +681,7 @@ PluginComponent {
             targetDuration = "infinity";
         }
         if (globalIsActive.value) {
-            deactivateCaffeine("manual-toggle");
+            deactivateCaffeinate("manual-toggle");
         } else {
             // Activate
             const args = [
@@ -723,7 +723,7 @@ PluginComponent {
         }
     }
 
-    function activateCaffeineAuto(targetDuration) {
+    function activateCaffeinateAuto(targetDuration) {
         if (batteryIntegrationEnabled && typeof BatteryService !== "undefined" && BatteryService.batteryAvailable && !BatteryService.isCharging && BatteryService.batteryLevel <= batteryLowThreshold) {
             return;
         }
@@ -769,8 +769,8 @@ PluginComponent {
         }
     }
 
-    function deactivateCaffeineAuto() {
-        deactivateCaffeine("auto");
+    function deactivateCaffeinateAuto() {
+        deactivateCaffeinate("auto");
     }
 
     function checkAutoActivation() {
@@ -811,13 +811,13 @@ PluginComponent {
         if (shouldActivate) {
             if (!globalIsActive.value) {
                 if (!globalManualOverrideOff.value) {
-                    activateCaffeineAuto("infinity");
+                    activateCaffeinateAuto("infinity");
                 }
             }
         } else {
             globalManualOverrideOff.set(false);
             if (globalIsAutoActive.value) {
-                deactivateCaffeineAuto();
+                deactivateCaffeinateAuto();
             }
         }
     }
@@ -827,7 +827,7 @@ PluginComponent {
         if (typeof BatteryService === "undefined" || !BatteryService.batteryAvailable) return;
         
         if (!BatteryService.isCharging && BatteryService.batteryLevel <= batteryLowThreshold) {
-            deactivateCaffeine("battery");
+            deactivateCaffeinate("battery");
         }
     }
 
@@ -880,7 +880,7 @@ PluginComponent {
         ignoreUnknownSignals: true
         function onLockedChanged() {
             if (SessionService.locked && deactivateOnManualLock && globalIsActive.value) {
-                deactivateCaffeine("lock");
+                deactivateCaffeinate("lock");
             }
         }
     }
@@ -935,13 +935,13 @@ PluginComponent {
 
                         StyledText {
                             text: {
-                                if (!root.caffeineActive) return I18n.tr("Inactive");
+                                if (!root.caffeinateActive) return I18n.tr("Inactive");
                                 if (root.selectedDuration === "infinity") return I18n.tr("Active (Indefinite)");
                                 const mins = Math.ceil(root.timeLeft / 60);
                                 return I18n.tr("Active: %1m remaining").arg(mins);
                             }
                             font.pixelSize: Theme.fontSizeSmall
-                            color: root.caffeineActive ? Theme.primary : Theme.surfaceVariantText
+                            color: root.caffeinateActive ? Theme.primary : Theme.surfaceVariantText
                         }
                     }
                 }
@@ -975,7 +975,7 @@ PluginComponent {
                                 onClicked: {
                                     const isSelected = String(root.selectedDuration) === String(modelData.value)
                                     if (isSelected) {
-                                        root.toggleCaffeine(modelData.value)
+                                        root.toggleCaffeinate(modelData.value)
                                     } else {
                                         root.changeDuration(modelData.value)
                                     }
@@ -1017,8 +1017,8 @@ PluginComponent {
                             if (!isNaN(mins) && mins > 0) {
                                 const value = (mins * 60).toString();
                                 root.changeDuration(value);
-                                if (!root.caffeineActive) {
-                                    root.toggleCaffeine(value);
+                                if (!root.caffeinateActive) {
+                                    root.toggleCaffeinate(value);
                                 }
                                 customTimeInputCC.text = "";
                             }

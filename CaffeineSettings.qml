@@ -181,6 +181,6 @@ PluginSettings {
     }
 
     PluginAbout {
-        repoUrl: "https://github.com/hthienloc/dms-caffeine"
+        repoUrl: "https://github.com/robwilkerson/dms-caffeinate"
     }
 }

@@ -35,12 +35,18 @@ telling the user which command to run and what to look for, then wait:
 Both require the id argument, and neither re-reads `plugin.json`, so `dms restart` is the
 safe default. These run in the user's Wayland session, not an agent shell.
 
+If a correct-looking edit doesn't change the bar's behavior, check that
+`~/.config/DankMaterialShell/plugins/caffeinate` is a symlink to this repo before debugging
+anything else. A real directory there means the bar is running a different copy and your edits
+never load. See `.claude/memory/local-development-setup.md`.
+
 ## Conventions
 
-- Plugin `id` is `caffeinate`. There is a known mismatch: `CaffeineWidget.qml:12` still
-  says `pluginId: "caffeine"`, splitting persisted state across two keys. See
-  `.claude/memory/plugin-identity.md` before touching either.
-- File and type names stay `Caffeine*`. Only the id and display name were rebranded.
+- Plugin `id` is `caffeinate`, and the `pluginId` in both `CaffeineWidget.qml` and
+  `CaffeineSettings.qml` must match it. A mismatch disconnects the settings pane from the
+  widget with no error anywhere. See `.claude/memory/plugin-identity.md`.
+- File and type names stay `Caffeine*`. Only the id and display name were rebranded; every
+  other `caffeine` identifier is now `caffeinate`.
 - User-facing strings go through `I18n.tr()`. After adding one, run
   `python3 scripts/i18n.py extract`, then `translate`. The brand name stays unlocalized.
   (The script's docstring says "dms-stopwatch" — it was copied from another plugin.)
