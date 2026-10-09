@@ -14,7 +14,10 @@ PluginComponent {
 
     // Reactive states
     readonly property bool caffeinateActive: globalIsActive.value
-    property string selectedDuration: {
+    property string selectedDuration: savedDuration()
+
+    // The user's chosen duration, falling back to the configured default.
+    function savedDuration() {
         if (pluginData && pluginData.selectedDuration !== undefined && pluginData.selectedDuration !== null && pluginData.selectedDuration !== "undefined" && pluginData.selectedDuration !== "") {
             return pluginData.selectedDuration;
         }
@@ -517,6 +520,7 @@ PluginComponent {
                     pluginService.savePluginState(pluginId, "expiration", 0);
                 }
             }
+            syncWithSessionInhibit();
             // Trigger auto-checks after we sync caffeinate state!
             checkAutoActivation();
             checkBatteryStatus();
@@ -634,6 +638,9 @@ PluginComponent {
         // Stop any running countdown
         countdownTimer.stop();
 
+        // An external inhibit displays as Forever without saving it; go back to the user's choice.
+        selectedDuration = Qt.binding(savedDuration);
+
         // Clear stored expiration state
         if (pluginService) {
             pluginService.savePluginState(pluginId, "expiration", 0);
@@ -647,7 +654,7 @@ PluginComponent {
                         I18n.tr("Low Battery"),
                         I18n.tr("Stay awake disabled to save power.")
                     );
-                } else if (reason !== "lock" && reason !== "silent") {
+                } else if (reason !== "lock" && reason !== "silent" && reason !== "external") {
                     ToastService?.showInfo(I18n.tr("Screen sleep is now allowed."));
                 }
             }
@@ -760,6 +767,23 @@ PluginComponent {
 
         if (typeof SessionService !== "undefined") {
             SessionService.enableIdleInhibit();
+        }
+    }
+
+    // DMS's idle inhibitor can change without us: the Control Center toggle, `dms ipc call
+    // inhibit`, or DMS restoring it from session.json at startup. Mirror it so the widget never
+    // shows Inactive while the session is held awake. Our own paths set isActive before calling
+    // enable/disableIdleInhibit, so by the time the change arrives here the two already agree.
+    function syncWithSessionInhibit() {
+        if (typeof SessionService === "undefined") return;
+        if (SessionService.idleInhibited && !globalIsActive.value) {
+            // An inhibit we didn't start has no end time, so show it as Forever.
+            selectedDuration = "infinity";
+            countdownTimer.stop();
+            globalTimeLeft.set(0);
+            globalIsActive.set(true);
+        } else if (!SessionService.idleInhibited && globalIsActive.value) {
+            deactivateCaffeinate("external");
         }
     }
 
@@ -876,6 +900,9 @@ PluginComponent {
             if (SessionService.locked && deactivateOnManualLock && globalIsActive.value) {
                 deactivateCaffeinate("lock");
             }
+        }
+        function onIdleInhibitedChanged() {
+            syncWithSessionInhibit();
         }
     }
 
