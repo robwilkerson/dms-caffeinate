@@ -14,7 +14,10 @@ PluginComponent {
 
     // Reactive states
     readonly property bool caffeinateActive: globalIsActive.value
-    property string selectedDuration: {
+    property string selectedDuration: savedDuration()
+
+    // The user's chosen duration, falling back to the configured default.
+    function savedDuration() {
         if (pluginData && pluginData.selectedDuration !== undefined && pluginData.selectedDuration !== null && pluginData.selectedDuration !== "undefined" && pluginData.selectedDuration !== "") {
             return pluginData.selectedDuration;
         }
@@ -635,6 +638,9 @@ PluginComponent {
         // Stop any running countdown
         countdownTimer.stop();
 
+        // An external inhibit displays as Forever without saving it; go back to the user's choice.
+        selectedDuration = Qt.binding(savedDuration);
+
         // Clear stored expiration state
         if (pluginService) {
             pluginService.savePluginState(pluginId, "expiration", 0);
@@ -648,7 +654,7 @@ PluginComponent {
                         I18n.tr("Low Battery"),
                         I18n.tr("Stay awake disabled to save power.")
                     );
-                } else if (reason !== "lock" && reason !== "silent") {
+                } else if (reason !== "lock" && reason !== "silent" && reason !== "external") {
                     ToastService?.showInfo(I18n.tr("Screen sleep is now allowed."));
                 }
             }
